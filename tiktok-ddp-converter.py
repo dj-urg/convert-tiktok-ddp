@@ -26,7 +26,7 @@ app.layout = dbc.Container([
                 style={'textAlign': 'center', 'margin': '10px', 'display': 'flex', 'justifyContent': 'center', 'flexDirection': 'column'}
             ),
             html.Hr(),
-            html.P("This application is part of a data donations project at the Vrije Universiteit Brussel. The app processes your personal data file received from TikTok from JSON into a CSV that only contains your 'Video Browsing History'. This includes a URL link to the TikTok video that has been watched and a date on which the video was watched. If you have any questions about this process, please contact daniel.jurg@vub.be", className="text-center"),
+            html.P("This application is part of a data donations project at the Vrije Universiteit Brussel. The app processes your personal data file received from TikTok from JSON into a CSV that only contains your 'Video Browsing History'. This includes a URL link to the TikTok video that has been watched and a date on which the video was watched. Our application processes your uploaded data in real-time, ensuring that no personal information is stored or kept on any server. Once your session ends, any temporarily held data is immediately discarded. We prioritize your privacy, handling your data exclusively for the conversion process and ensuring it remains under your control at all times. If you have any questions about this process, please contact daniel.jurg@vub.be", className="text-center"),
         ], width=12)
     ]),
     dbc.Row([
