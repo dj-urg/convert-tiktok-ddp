@@ -1,10 +1,10 @@
 # Import necessary libraries
 import dash
-from dash import Dash, dcc, html, Input, Output, callback, dash_table, State, dcc
+from dash import dcc, html, Input, Output, dash_table, callback, State
 import dash_bootstrap_components as dbc
 import pandas as pd
 import json
-import base64  # Ensure base64 is imported for decoding
+import base64
 
 # Initialize the Dash app (using Bootstrap for styling)
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -47,9 +47,9 @@ app.layout = dbc.Container([
 video_browsing_history_df = pd.DataFrame()
 
 # Callback to process the uploaded file, display its content, and prepare for CSV download
-@callback(
-    Output('table', 'data'),
-    Output('table', 'columns'),
+@app.callback(
+    [Output('table', 'data'),
+     Output('table', 'columns')],
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename')]
 )
@@ -72,7 +72,7 @@ def update_output(contents, filename):
         return [{}], []
 
 # Callback to handle the download action
-@callback(
+@app.callback(
     Output("download-link", "data"),
     [Input("downloadData", "n_clicks")],
     prevent_initial_call=True  # Prevents the callback from running on app load
@@ -82,5 +82,8 @@ def generate_csv(n_clicks):
         return dcc.send_data_frame(video_browsing_history_df.to_csv, "video_browsing_history.csv", index=False)
     return None
 
+# Entry point for running the app on Heroku
+server = app.server
+
 if __name__ == '__main__':
-    app.run_server(debug=True, port=8051)
+    app.run_server(debug=True, port=int(os.environ.get('PORT', 8051)))
