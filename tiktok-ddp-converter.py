@@ -1,4 +1,5 @@
 # Import necessary libraries
+from datetime import datetime
 import dash
 from dash import dcc, html, Input, Output, dash_table, callback, State, dcc
 import dash_bootstrap_components as dbc
@@ -13,74 +14,120 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 # Define the layout of the app
 app.layout = dbc.Container([
-    dbc.Row(dbc.Col(html.H1("Upload and Convert TikTok Data Donation"), width={"size": 6, "offset": 3})),
-    
+    dbc.Row(dbc.Col(html.H1("Upload, Convert and Download TikTok Data Download Package", className="text-center"), width=12)),
     dbc.Row([
         dbc.Col([
             dcc.Upload(
                 id="upload-data",
-                children=html.Div(['Drag and Drop or ', html.A('Select Files')]),
-                style={
-                    'width': '100%', 'height': '60px', 'lineHeight': '60px',
-                    'borderWidth': '1px', 'borderStyle': 'dashed',
-                    'borderRadius': '5px', 'textAlign': 'center', 'margin': '10px'
-                },
-                # Allow a single file to be uploaded
-                multiple=False,
-                accept=".json"
+                children=html.Div([
+                    html.P('Drag and Drop or', className="text-center"),
+                    html.P(html.A('Select Files', className="btn btn-primary btn-lg btn-block"))
+                ]),
+                style={'textAlign': 'center', 'margin': '10px', 'display': 'flex', 'justifyContent': 'center', 'flexDirection': 'column'}
             ),
-            html.Button("Download CSV", id="downloadData"),
-            dcc.Download(id="download-link"),
             html.Hr(),
-            html.P("This application is part of a data donations project at the Vrije Universiteit Brussel..."),
-            # More explanatory text...
-        ], width=6)
+            html.P("This application is part of a data donations project at the Vrije Universiteit Brussel. The app processes your personal data file received from TikTok from JSON into a CSV that only contains your 'Video Browsing History'. This includes a URL link to the TikTok video that has been watched and a date on which the video was watched.", className="text-center"),
+            html.P("Our application processes your uploaded data in real-time, ensuring that no personal information is stored or kept on any server. Once your session ends, any temporarily held data is immediately discarded. We prioritize your privacy, handling your data exclusively for the conversion process and ensuring it remains under your control at all times.", className="text-center"),
+            html.P("If you have any questions about this process, please contact daniel.jurg@vub.be", className="text-center"),
+        ], width=12)
     ]),
     dbc.Row([
-        dbc.Col(dash_table.DataTable(id='table'), width={"size": 6, "offset": 3})
+        dbc.Col(html.Div(id='average-watch-time', className="text-center mt-3 mb-3", style={'color': '#007BFF', 'fontSize': '20px', 'fontWeight': 'bold'}), width=12)
     ]),
-    dbc.Row([  # Add a new row for the bar chart
-        dbc.Col(dcc.Graph(id='video-history-chart'), width={"size": 8, "offset": 2})
+    dbc.Row([  # Row for the bar chart
+        dbc.Col(dcc.Graph(id='video-history-chart'), width=12)
+    ]),
+    dbc.Row([
+        dbc.Col(html.Button("Download CSV", id="downloadData", className="btn btn-success btn-lg btn-block"), 
+                width={"size": 6, "offset": 3},  # Set the size and offset to center the button
+                className="d-flex justify-content-center")  # Use d-flex and justify-content-center to center the column content
+    ]),
+    dbc.Row([  # dcc.Download component doesn't need a visible row; it works in the background
+        dbc.Col(dcc.Download(id="download-link"))
+    ]),
+    # This empty Row serves as a spacer
+    dbc.Row([
+        dbc.Col(html.Div(), className="mb-3")  # You can adjust the margin-bottom as needed
+    ], className="mt-3"),  # Add margin-top to this row if you want even more space
+    dbc.Row([
+        dbc.Col(dash_table.DataTable(id='table'), width=12)
     ])
-], fluid=True)
+], fluid=True, className="text-center")
 
 # Global variable to store video browsing history DataFrame
 video_browsing_history_df = pd.DataFrame()
+
+# Assuming 'video_browsing_history_df' and other setup code is already provided
+def parse_date(date_str):
+    """Parse the datetime string to a datetime object."""
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+    except ValueError as e:
+        return None
 
 # Callback to process the uploaded file, display its content, prepare for CSV download, and update the bar chart
 @app.callback(
     [Output('table', 'data'),
      Output('table', 'columns'),
-     Output('video-history-chart', 'figure')],  # Add output for the chart
+     Output('video-history-chart', 'figure'),
+     Output('average-watch-time', 'children')],  # Add this line
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename')]
 )
+
 def update_output(contents, filename):
-    global video_browsing_history_df
     if contents is not None:
-        content_type, content_string = contents.split(',')
-        decoded = base64.b64decode(content_string)
-        # Decode the JSON content and specifically extract the "Video Browsing History"
-        data = json.loads(decoded)
-        video_history = data.get('Activity', {}).get('Video Browsing History', {}).get('VideoList', [])
-        if video_history:
-            # Convert the video browsing history into a pandas DataFrame
-            video_browsing_history_df = pd.DataFrame(video_history)
-            # Ensure the 'Date' column is in datetime format
-            video_browsing_history_df['Date'] = pd.to_datetime(video_browsing_history_df['Date'])
-            # Extract year and month from the 'Date', and count videos per month
-            video_browsing_history_df['year_month'] = video_browsing_history_df['Date'].dt.to_period('M')
-            links_per_month = video_browsing_history_df.groupby('year_month').size().reset_index(name='counts')
-            # Create the bar chart with Plotly Express
-            fig = px.bar(links_per_month, x='year_month', y='counts', labels={'year_month': 'Month', 'counts': 'Number of Videos'}, title="Video Links per Month")
-            # Prepare the data for the DataTable and the chart
-            return video_browsing_history_df.to_dict('records'), [{"name": i, "id": i} for i in video_browsing_history_df.columns], fig
-        else:
-            # Return empty states if no video history is found
-            return [{}], [], {}
-    else:
-        # Return empty states if no contents are uploaded
-        return [{}], [], {}
+        try:
+            content_type, content_string = contents.split(',')
+            decoded = base64.b64decode(content_string)
+            data = json.loads(decoded)
+            
+            video_history = data.get('Activity', {}).get('Video Browsing History', {}).get('VideoList', [])
+            
+            if video_history:
+                global video_browsing_history_df
+                video_browsing_history_df = pd.DataFrame(video_history)
+                
+                video_browsing_history_df['Date'] = pd.to_datetime(video_browsing_history_df['Date'])
+                video_browsing_history_df.sort_values('Date', inplace=True)
+                
+                video_browsing_history_df['Time_Diff'] = video_browsing_history_df['Date'].diff().dt.total_seconds()
+                
+                # Apply the filter for time differences
+                filtered_time_diff = video_browsing_history_df['Time_Diff'][video_browsing_history_df['Time_Diff'] <= 600]
+                
+                average_watch_time = filtered_time_diff[1:].mean()  # Exclude the first NaN value
+                
+                average_time_text = f"Average time spent per video (excluding breaks > 10 mins): {average_watch_time:.2f} seconds"
+                
+                links_per_month = video_browsing_history_df.groupby(video_browsing_history_df['Date'].dt.to_period('M')).size().reset_index(name='counts')
+                links_per_month['year_month'] = links_per_month['Date'].astype(str)
+                
+                fig = px.bar(links_per_month, x='year_month', y='counts', labels={'year_month': 'Month', 'counts': 'Number of Videos'}, title="Watched Videos per Month")
+                fig.update_layout({
+                    'plot_bgcolor': 'white',
+                    'paper_bgcolor': 'white',
+                    'font': {
+                        'color': '#2c3e50',
+                        'family': "Arial, Helvetica, sans-serif",
+                     },
+                    'title': {
+                        'x': 0.5,
+                        'xanchor': 'center'
+                    }
+                })
+                fig.update_xaxes(showline=True, linewidth=2, linecolor='gray', gridcolor='lightgray')
+                fig.update_yaxes(showline=True, linewidth=2, linecolor='gray', gridcolor='lightgray')
+
+                records = video_browsing_history_df.to_dict('records')
+                columns = [{"name": i, "id": i} for i in video_browsing_history_df.columns]
+                
+                return records, columns, fig, average_time_text
+            else:
+                return [{}], [], {}, "No video history found."
+        except Exception as e:
+            return [{}], [], {}, f"Error processing the file: {e}"
+    return [{}], [], {}, "No file uploaded."
 
 # Callback to handle the download action remains unchanged
 @app.callback(
