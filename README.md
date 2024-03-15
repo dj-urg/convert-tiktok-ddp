@@ -2,8 +2,8 @@
 This repository is part of a project titled: "Data Mirroring Techniques: A Methodology and Method for Reflecting on Social Media Data Donations within Audience Studies"
 
 # researchers involved in the project
-Daniel Jurg (daniel.jurg@vub.be)
-Sarah Vis
+Daniel Jurg (daniel.jurg@vub.be),
+Sarah Vis,
 Ike Picone
 
 # background
