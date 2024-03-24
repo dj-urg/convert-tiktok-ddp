@@ -100,13 +100,19 @@ def update_output(contents, selected_sections, filename):
                 all_videos.extend(video_history)
             
             if 'favorite_video' in selected_sections:
-                favorite_video_history = data.get('Activity', {}).get('Favorite', {}).get('FavoriteVideoList', [])
+                # Check for the key 'Favorite Videos' first, as seen in the screenshot
+                favorite_video_history = data.get('Activity', {}).get('Favorite Videos', {}).get('FavoriteVideoList', [])
+                if not favorite_video_history:  # Fallback to 'Favorite' if 'Favorite Videos' does not exist
+                    favorite_video_history = data.get('Activity', {}).get('Favorite', {}).get('FavoriteVideoList', [])
                 for video in favorite_video_history:
                     video['Source'] = 'Favorite'
                 all_videos.extend(favorite_video_history)
             
-            if 'item_favorite' in selected_sections:
+             if 'item_favorite' in selected_sections:
+                # First, attempt to access the ItemFavoriteList using the new structure
                 item_favorite_list = data.get('Activity', {}).get('Like List', {}).get('ItemFavoriteList', [])
+                if not item_favorite_list:  # If not found, try the old key structure
+                    item_favorite_list = data.get('Activity', {}).get('Liked', {}).get('ItemFavoriteList', [])
                 for video in item_favorite_list:
                     video['Source'] = 'Liked'
                 all_videos.extend(item_favorite_list)
