@@ -107,10 +107,10 @@ def update_output(contents, selected_sections, filename):
                     video['Source'] = 'Favorite'
                 all_videos.extend(favorite_video_history)
             
-             if 'item_favorite' in selected_sections:
-                 item_favorite_list = data.get('Activity', {}).get('Like List', {}).get('ItemFavoriteList', [])
-                 if not item_favorite_list:  # If not found, try the old key structure
-                     item_favorite_list = data.get('Activity', {}).get('Liked', {}).get('ItemFavoriteList', [])
+            if 'item_favorite' in selected_sections:
+                item_favorite_list = data.get('Activity', {}).get('Like List', {}).get('ItemFavoriteList', [])
+                if not item_favorite_list:  # If not found, try the old key structure
+                    item_favorite_list = data.get('Activity', {}).get('Liked', {}).get('ItemFavoriteList', [])
                 for video in item_favorite_list:
                     video['Source'] = 'Liked'
                 all_videos.extend(item_favorite_list)
