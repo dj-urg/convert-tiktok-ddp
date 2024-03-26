@@ -1,4 +1,4 @@
-TikTok Data Processing Dash App
+#TikTok Data Processing Dash App#
 Overview
 This Dash application is designed to upload, convert, and download TikTok data, specifically focusing on users' "Video Browsing History". It offers an intuitive web interface for users to upload their personal data file received from TikTok, processes it from JSON to CSV format, and allows for the download of the processed data.
 
