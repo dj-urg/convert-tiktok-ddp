@@ -1,19 +1,52 @@
-/* assets/style.css */
-.link-class {
-    color: #FFFFFF;
-    background-color: #007BFF;
-    padding: .5rem 1rem;
-    border-radius: .25rem;
-    text-decoration: none;
+/* Center the content horizontally and vertically */
+.center-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
-.link-class:hover {
-    background-color: #0056b3;
+/* Ensure containers take at least the height of the viewport */
+.full-height {
+    min-height: 100vh;
 }
 
-#average-watch-time {
-    color: #007BFF;
-    font-size: 20px;
+/* Example additional styling */
+.container {
+    max-width: 800px; /* Limit container width */
+    margin: 0 auto; /* Center the container horizontally */
+    padding: 20px; /* Add padding to the container */
+}
+
+h1 {
+    font-size: 2rem; /* Increase font size for headings */
+    color: #333; /* Change text color */
+}
+
+.card {
+    background-color: #f8f9fa; /* Set background color for cards */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add box shadow */
+    padding: 20px; /* Add padding to cards */
+}
+
+.btn {
+    background-color: #343a40; /* Set button background color */
+    color: #fff; /* Set button text color */
+    border: none; /* Remove button border */
+    padding: 10px 20px; /* Add padding to buttons */
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+.btn:hover {
+    background-color: #343a40; /* Change button background color on hover */
+}
+
+.center-horizontal {
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Add vertical alignment */
+}
+
+.font-weight-bold {
     font-weight: bold;
 }
-
